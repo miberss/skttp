@@ -1,0 +1,33 @@
+import:
+    java.net.URI
+    java.time.Duration
+    java.net.http.HttpClient
+    java.net.http.HttpRequest
+    java.net.http.HttpResponse$BodyHandlers
+    java.net.http.HttpRequest$BodyPublishers
+
+function http_get(url: String) -> Object:
+    return http_request("GET", {_url}, "", "")
+
+function http_post(url: String, body: String, content_type: String = "application/json") -> Object:
+    return http_request("POST", {_url}, {_body}, "Content-Type: %{_content_type}%")
+
+function http_request(method: String, url: String, body: String, headers: Strings) -> Object:
+    set {_b} to HttpRequest.newBuilder()
+    {_b}.uri(URI.create({_url}))
+    {_b}.timeout(Duration.ofSeconds(30))
+    {_b}.method({_method}, body_publisher({_body}))
+    apply_headers({_b}, {_headers::*})
+    set {_client} to HttpClient.newHttpClient()
+    return {_client}.send({_b}.build(), BodyHandlers.ofString())
+
+local function body_publisher(body: String) -> Object:
+    return ((BodyPublishers.noBody()) if ({_body} is ""), else (BodyPublishers.ofString({_body})))
+
+local function apply_headers(builder: Object, headers: Strings):
+    for {_h} in {_headers::*}:
+        if {_h} is "":
+            continue
+        set {_key} to first element of ({_h} split at ": ")
+        set {_value} to subtext of {_h} from (length of {_key} + 3) to (length of {_h})
+        {_builder}.header({_key}, {_value})

@@ -1,0 +1,16 @@
+function http_status(response: Object) -> Integer:
+    return {_response}.statusCode()
+
+function http_body(response: Object) -> String:
+    return {_response}.body()
+
+# whether the status is a 2xx success
+function http_ok(response: Object) -> Boolean:
+    set {_s} to http_status({_response})
+    if {_s} < 200:
+        return false
+    return whether {_s} < 300
+
+# a header value, unset if absent
+function http_header(response: Object, name: String) -> String:
+    return {_response}.headers().firstValue({_name}).orElse({_none})

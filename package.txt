@@ -1,0 +1,4 @@
+name: skttp
+version: 0.1.0
+description: A tiny HTTP client for Skript.
+requires: Skript >= 2.15, skript-reflect >= 2.6
