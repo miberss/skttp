@@ -1,6 +1,8 @@
 import:
     java.net.URI
+    java.net.URLEncoder
     java.time.Duration
+    java.nio.charset.StandardCharsets
     java.net.http.HttpClient
     java.net.http.HttpRequest
     java.net.http.HttpResponse$BodyHandlers
@@ -11,6 +13,15 @@ function http_get(url: String) -> Object:
 
 function http_post(url: String, body: String, content_type: String = "application/json") -> Object:
     return http_request("POST", {_url}, {_body}, "Content-Type: %{_content_type}%")
+
+function http_put(url: String, body: String, content_type: String = "application/json") -> Object:
+    return http_request("PUT", {_url}, {_body}, "Content-Type: %{_content_type}%")
+
+function http_patch(url: String, body: String, content_type: String = "application/json") -> Object:
+    return http_request("PATCH", {_url}, {_body}, "Content-Type: %{_content_type}%")
+
+function http_delete(url: String) -> Object:
+    return http_request("DELETE", {_url}, "", "")
 
 function http_request(method: String, url: String, body: String, headers: Strings) -> Object:
     set {_b} to HttpRequest.newBuilder()
@@ -31,3 +42,18 @@ local function apply_headers(builder: Object, headers: Strings):
         set {_key} to first element of ({_h} split at ": ")
         set {_value} to subtext of {_h} from (length of {_key} + 3) to (length of {_h})
         {_builder}.header({_key}, {_value})
+
+# key value strings -> url query; ("q", "hello world") -> "?q=hello+world"
+function http_query(pairs: Strings) -> String:
+    set {_count} to floor((size of {_pairs::*}) / 2)
+    if {_count} < 1:
+        return ""
+    for {_i} in (integers between 1 and {_count}):
+        set {_k} to {_pairs::%(2 * {_i}) - 1%}
+        set {_v} to {_pairs::%2 * {_i}%}
+        set {_parts::%{_i}%} to "%url_encode({_k})%=%url_encode({_v})%"
+    set {_joined} to join {_parts::*} with "&"
+    return "?%{_joined}%"
+
+local function url_encode(value: String) -> String:
+    return URLEncoder.encode({_value}, StandardCharsets.UTF_8)
