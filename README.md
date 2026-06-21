@@ -4,7 +4,7 @@ A tiny HTTP client for Skript.
 
 ```
 set {_res} to http_get("https://api.example.com/thing")
-broadcast http_body({_res}) if http_ok({_res})
+broadcast http_body({_res}) if http_ok({_res}) = true
 ```
 
 ## Install
